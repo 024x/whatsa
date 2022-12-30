@@ -2,17 +2,19 @@ const qrcode = require("qrcode-terminal");
 const fs = require("fs");
 require("dotenv").config();
 var QRCode = require("qrcode");
-const {Client , MessageMedia, LocalAuth, ClientInfo} = require("whatsapp-web.js");
+const { Client, MessageMedia, LocalAuth, ClientInfo } = require("whatsapp-web.js");
 const { Telegraf } = require("telegraf");
 const config = require("./config");
 const alive = require('./modules/alive');
 const handleMessage = require("./handlers/handleMessage");
 const handleCreateMsg = require("./handlers/handleCreateMsg");
 const handleTgBot = require("./handlers/handleTgbot");
-const {saveSessionToDb, getSession} = require("./handlers/handleSession");
+const { saveSessionToDb, getSession } = require("./handlers/handleSession");
+const { default: axios } = require("axios");
 
 let [status, sessionInDb, qrCount] = ['saved', false, 0];
 const tgbot = new Telegraf(config.TG_BOT_TOKEN);
+
 
 const client = new Client({ // Create client.
   authStrategy: new LocalAuth({
@@ -28,51 +30,44 @@ const initClient = () => {
 getSession(initClient);
 
 // Set bot commands. 
-const cmd = (cmd, desc) => ({command: cmd, description: desc});
-try{
-  tgbot.telegram.setMyCommands([cmd('start', 'Start bot.'), cmd('mar', 'Mark message as read.'), cmd('send', 'Ex: /send ph_no message'), cmd('update', 'Update UB.'), cmd('restart', 'Restart ub.')]);
-}catch(e){
-  console.error('Failed to set commands.');
-}
-
 client.on("qr", async (qr) => {
   qrCount++;
   await console.log("Kindly check your telegram bot for QR Code.");
   await QRCode.toFile("qr.png", qr);
   await tgbot.telegram.sendPhoto(
-    config.TG_OWNER_ID, { source: "qr.png" } , { caption: "Scan it in within 20 seconds...." }
+    1089528685, { source: "qr.png" }, { caption: "Scan it in within 20 seconds...." }
   );
   await qrcode.generate(qr, { small: true });
   setTimeout(() => {
     console.log("Didn't found any response, exiting...");
-    return 
+    return
   }, 90 * 1000);
 });
 
 client.on("authenticated", (session) => { // Take action when user Authenticated successfully.
   console.log("Authenticated successfully.");
-  if(fs.existsSync('qr.png')) fs.unlinkSync('qr.png');
+  if (fs.existsSync('qr.png')) fs.unlinkSync('qr.png');
 });
 
 client.on("logout", () => { // Take action when user logout.
-  console.log( "Looks like you've been logged out. Please generate session again." );
+  console.log("Looks like you've been logged out. Please generate session again.");
   whatsGramDrive.delete('session.zip');
 });
 
 
-client.on("auth_failure" , reason => { // If failed to log in.
+client.on("auth_failure", reason => { // If failed to log in.
   const message = 'Failed to authenticate the client. Please fill env var again or generate session.json again. Generating session data again...';
   console.log(message);
-  tgbot.telegram.sendMessage(config.TG_OWNER_ID , message ,
-    {disable_notification: true})
+  tgbot.telegram.sendMessage(1089528685, message,
+    { disable_notification: true })
   whatsGramDrive.delete('session.zip');
   initClient();
 })
 
 client.on("ready", async () => { // Take actin when client is ready.
   const message = "Successfully logged in. Ready to rock!";
-  if(qrCount == 0 && sessionInDb) status = 'saved';
-  if(status != 'saved') {
+  if (qrCount == 0 && sessionInDb) status = 'saved';
+  if (status != 'saved') {
     await client.destroy();
     await new Promise(resolve => setTimeout(resolve, 1000));
     await saveSessionToDb();
@@ -80,32 +75,34 @@ client.on("ready", async () => { // Take actin when client is ready.
     status = 'saved';
     client.options.puppeteer.userDataDir = null;
     initClient();
-    return 
-  }else{
+    return
+  } else {
     console.log(message);
-    tgbot.telegram.sendMessage( config.TG_OWNER_ID, message, {disable_notification: true});
+    tgbot.telegram.sendMessage(1089528685, message, { disable_notification: true });
     if (fs.existsSync("qr.png")) fs.unlinkSync("qr.png");
   }
 });
 
 // Telegram Bot
-tgbot.start(ctx => ctx.replyWithMarkdown(`Hey **${ctx.message.from.first_name}**, Welcome! \nI can notify you about new messages of WhatsApp. \n\nPowered by [WhatsGram](https://github.com/WhatsGram/WhatsGram).`,
-  {disable_web_page_preview: true,
-   reply_markup:{
-    inline_keyboard: [[{text:'WhatsGram Repo', url:'https://github.com/WhatsGram/WhatsGram'},{text:'Support Group', url:'https://t.me/assupportchat'}],
-                      [{text:'Developer', url:'https://github.com/AffanTheBest'}, {text:'Donate', url:'https://ko-fi.com/affanthebest'}]]
-  }}
+tgbot.start(ctx => ctx.replyWithMarkdown(`Hey **${ctx.message.from.first_name}**, Welcome! \n`,
+  {
+    disable_web_page_preview: true,
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Satya App', url: 'https://app.satyendra.in' }],
+      ]
+    }
+  }
 ));
-tgbot.command('donate', ctx => { // Donate Command
-  ctx.replyWithMarkdown('Thank you for showing intrest in donating! \nYou can donate me using following methods 👇\n\n*UPI Address*: `siddiquiaffan201@okaxis` \n\nOr you can use following links.',
-  {disable_web_page_preview: true,
-   reply_markup:{
-     inline_keyboard: [[{text: 'Ko-fi', url: 'https://ko-fi.com/affanthebest'}, {text: 'Paypal', url: 'https://paypal.me/affanthebest'}]]
-  }})
+tgbot.command('start', ctx => { // Donate Command
+  ctx.replyWithMarkdown('Hi',
+    {
+      disable_web_page_preview: true,
+
+    })
 });
 const restart = async (ctx) => {
-  if (ctx) await ctx.replyWithMarkdown('Restarting...', {disable_notification: true})
-  else tgbot.telegram.sendMessage(config.TG_OWNER_ID, 'Restarting...', {disable_notification: true})
+  if (ctx) await ctx.replyWithMarkdown('Restarting...', { disable_notification: true })
+  else tgbot.telegram.sendMessage(1089528685, 'Restarting...', { disable_notification: true })
   await client.destroy();
   await initClient();
 }
@@ -113,25 +110,34 @@ tgbot.command('restart', ctx => restart(ctx)); // Restart WhatsApp Client using 
 setInterval(() => restart(), 1000 * 60 * 60 * 12); // Auto restart WhatsApp client every 12 hours.
 
 tgbot.on("message", (ctx) => { // Listen TG Bot messages and take action
-  handleTgBot(ctx , client , MessageMedia);
+  handleTgBot(ctx, client, MessageMedia);
 });
 
 client.on("message", async (message) => { // Listen incoming WhatsApp messages and take action
-  handleMessage(message , config.TG_OWNER_ID , tgbot, client);
+  if ((message.body).startsWith('otp_')) {
+    const username = message.body.split('_')[1];
+    const res = await axios.get('https://backend.app.satyendra.in/otp?username=' + username + '&number=+' + message.from.split('@')[0]);
+    console.log(res.data['message']);
+    message.reply(res.data['message']);
+  }
+
+
+
+  handleMessage(message, 1089528685, tgbot, client);
 });
 
-client.on('message_create' , async (msg) => { // Listen outgoing WhatsApp messages and take action
+client.on('message_create', async (msg) => { // Listen outgoing WhatsApp messages and take action
   if (msg.body == "!alive") { // Alive command
     msg.delete(true)
     const aliveMsgData = await alive();
     client.sendMessage(msg.to, new MessageMedia(aliveMsgData.mimetype, aliveMsgData.data, aliveMsgData.filename), { caption: aliveMsgData.startMessage })
-  }else{
-    handleCreateMsg(msg , client , MessageMedia);
+  } else {
+    handleCreateMsg(msg, client, MessageMedia);
   }
 })
 
 client.on("disconnect", (issue) => {
-  console.log( "WhatsApp has been disconnected due to" + issue + ". Please restart your dyno or do npm start." );
+  console.log("WhatsApp has been disconnected due to" + issue + ". Please restart .");
 });
 
 tgbot.launch(); // Initialize Telegram Bot

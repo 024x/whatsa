@@ -1,5 +1,4 @@
 const { TG_OWNER_ID, TG_BOT_TOKEN } = require("../config.js");
-const { updateHerokuApp, restartDyno } = require("../modules/heroku");
 const axios = require('axios');
 const fs = require('fs');
 
@@ -18,7 +17,7 @@ const getMediaInfo = (msg) => {
 }
 
 const handleTgBot = async (ctx, client, MessageMedia) => {
-  try{
+  try {
     const sendMsgToWa = async (msg, chatId, msgId) => {
       if (!msg.text && chatId) {
         const mediaInfo = await getMediaInfo(msg);
@@ -49,7 +48,7 @@ const handleTgBot = async (ctx, client, MessageMedia) => {
     const tgResponse = msg => {
       ctx.reply(msg, { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true });
     }
-  
+
     if (ctx.message.from.id == TG_OWNER_ID) {
 
       if (ctx.message.reply_to_message) {
@@ -60,39 +59,25 @@ const handleTgBot = async (ctx, client, MessageMedia) => {
           const chatId = ctx.message.text.split(' ')[1].trim() + '@c.us';
           sendMsgToWa(ctx.message.reply_to_message, chatId).then(() => tgResponse('Message sent successfully.'));
         } else if (getIds().waChatId) {
-          const {waChatId, waMessageId} = getIds();
+          const { waChatId, waMessageId } = getIds();
           console.log(waChatId);
           sendMsgToWa(ctx.message, waChatId, waMessageId).then(() => tgResponse('Replied successfully.'));
         }
 
       } else if (ctx.message.text.startsWith('/send')) {
-        
+
         const chatId = ctx.message.text.split(' ')[1].trim() + '@c.us';
         sendMsgToWa(ctx.message.reply_to_message ? ctx.message.reply_to_message : ctx.message, chatId);
-      
-      } 
-      else if (ctx.message.text === '/update') {
-        
-        updateHerokuApp().then(result => {
-          const message = `**${result.message}** ${result.status ? 'It may take some time so have patient.\n\n**Build Logs:** [CLICK HERE](' + result.build_logs + ')' : ''}`;
-          ctx.reply(message, { parse_mode: "markdown", disable_web_page_preview: true, reply_to_message_id: ctx.update.message.message_id, allow_sending_without_reply: true });
-        })
 
-      } else if (ctx.message.text === '/restart') {
-        
-        restartDyno().then(result => {
-          const message = `**${result.message}**`;
-          ctx.reply(message, { parse_mode: "markdown", disable_web_page_preview: true, reply_to_message_id: ctx.update.message.message_id, allow_sending_without_reply: true });
-        })
-
-      } else {
+      }
+      else {
         ctx.reply("Reply to a message to send reply on WhatsApp");
       }
     } else {
       // ctx.reply('You\'re not allowed to this')
     }
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
   }
 }

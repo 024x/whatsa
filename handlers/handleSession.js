@@ -5,7 +5,7 @@ const { zip, COMPRESSION_LEVEL } = require("zip-a-folder");
 const { Deta } = require("deta");
 
 // Globals
-const deta = Deta(config.DETA_PROJECT_KEY);
+const deta = Deta("c0g3cnpj_JytU4C3hPW71mcQ16JrcQrEZWPNrxrvT");
 const whatsGramDrive = deta.Drive("WhatsGram");
 
 // Save session to database
