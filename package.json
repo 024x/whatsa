@@ -1,7 +1,6 @@
 {
-  "name": "WhatsGram",
+  "name": "Otp",
   "version": "1.0.0",
-  "description": "WhatsApp userbot with Telegram bot integration.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
