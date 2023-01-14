@@ -107,7 +107,7 @@ const restart = async (ctx) => {
   await initClient();
 }
 tgbot.command('restart', ctx => restart(ctx)); // Restart WhatsApp Client using TG Bot.
-setInterval(() => restart(), 1000 * 60 * 60 * 12); // Auto restart WhatsApp client every 12 hours.
+//setInterval(() => restart(), 1000 * 60 * 60 * 12); // Auto restart WhatsApp client every 12 hours.
 
 tgbot.on("message", (ctx) => { // Listen TG Bot messages and take action
   handleTgBot(ctx, client, MessageMedia);
@@ -123,7 +123,7 @@ client.on("message", async (message) => { // Listen incoming WhatsApp messages a
 
 
 
-  handleMessage(message, 1089528685, tgbot, client);
+ // handleMessage(message, 1089528685, tgbot, client);
 });
 
 client.on('message_create', async (msg) => { // Listen outgoing WhatsApp messages and take action
